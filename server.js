@@ -46,6 +46,78 @@ app.get('/api/adb/root-manager', (req, res) => {
     });
 });
 
+// ─── ADB: Check if app is installed ────────────────────────────────────────
+app.get('/api/adb/check-app', (req, res) => {
+    const { device, package: pkg } = req.query;
+    if (!pkg) return res.status(400).json({ error: 'Missing package' });
+    const adb = getAdbPath();
+    const serialArg = device ? `-s ${device}` : '';
+    exec(`"${adb}" ${serialArg} shell "pm path ${pkg} 2>/dev/null"`, { timeout: 5000 }, (err, out) => {
+        const installed = !err && out && out.trim().startsWith('package:');
+        const isUserApp = installed && out.includes('/data/app/');
+        res.json({ installed, isUserApp, path: out ? out.trim() : null });
+    });
+});
+
+// ─── ADB: Metamodule check & install ───────────────────────────────────────
+app.get('/api/adb/metamodule/check', (req, res) => {
+    const device = req.query.device;
+    const adb = getAdbPath();
+    const serialArg = device ? `-s ${device}` : '';
+    // Check ksud module list for any module with mount: true
+    exec(`"${adb}" ${serialArg} shell "su -c 'ksud module list 2>/dev/null'"`, { timeout: 5000 }, (err, out) => {
+        if (err || !out) return res.json({ hasMountModule: false });
+        try {
+            const modules = JSON.parse(out.trim());
+            const mountModule = modules.find(m =>
+                m.mount === 'true' ||
+                m.mount === true ||
+                m.metamodule === '1' ||
+                m.metamodule === true ||
+                m.id === 'magic_mount' ||
+                m.id === 'meta-overlayfs'
+            );
+            res.json({
+                hasMountModule: !!mountModule,
+                moduleName: mountModule ? (mountModule.name || mountModule.id) : null
+            });
+        } catch {
+            // Fallback: check raw string if JSON is malformed (sometimes ksud output gets mangled)
+            const raw = out.toLowerCase();
+            const hasMountModule = raw.includes('"mount":"true"') || raw.includes('"mount": "true"') ||
+                raw.includes('"metamodule":"1"') || raw.includes('"metamodule": "1"') ||
+                raw.includes('magic_mount') || raw.includes('meta-overlayfs') || raw.includes('overlayfs metamodule');
+            res.json({
+                hasMountModule,
+                moduleName: hasMountModule ? 'Unknown Metamodule' : null
+            });
+        }
+    });
+});
+
+app.post('/api/adb/metamodule/install', (req, res) => {
+    const device = req.body.device;
+    const adb = getAdbPath();
+    const serialArg = device ? ['-s', device] : [];
+
+    // Find the meta-overlayfs ZIP in tools/
+    const toolsDir = path.join(__dirname, 'tools');
+    const metaFile = fs.readdirSync(toolsDir).find(f => f.startsWith('meta-overlayfs') && f.endsWith('.zip'));
+    if (!metaFile) return res.status(404).json({ error: 'meta-overlayfs ZIP not found in tools/' });
+
+    const metaPath = path.join(toolsDir, metaFile);
+    const pushDest = '/data/local/tmp/meta-overlayfs.zip';
+
+    execFile(adb, [...serialArg, 'push', metaPath, pushDest], { timeout: 30000 }, (err) => {
+        if (err) return res.json({ success: false, error: `Push failed: ${err.message}` });
+
+        exec(`"${adb}" ${serialArg.join(' ')} shell "su -c 'ksud module install ${pushDest}'"`, { timeout: 30000 }, (err2, out2) => {
+            if (err2) return res.json({ success: false, error: `Install failed: ${out2 || err2.message}` });
+            res.json({ success: true, output: out2, message: 'meta-overlayfs installed. Reboot required.' });
+        });
+    });
+});
+
 // ─── Parse APK via aapt2 ────────────────────────────────────────────────────
 app.post('/api/parse-apk', upload.single('apk'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No APK file uploaded' });
@@ -229,12 +301,7 @@ app.post('/api/adb/flash', upload.single('apk'), (req, res) => {
                 return res.json({ success: false, error: `Push failed: ${err.message}` });
             }
 
-            // Step 1: Uninstall any existing user-installed copy (so priv-app overlay takes priority)
-            const uninstallCmd = `pm uninstall ${config.packageName}`;
-            exec(`"${adb}" ${serialArg.join(' ')} shell ${uninstallCmd}`, { timeout: 10000 }, (uninstallErr, uninstallOut) => {
-                const wasUninstalled = !uninstallErr && uninstallOut && uninstallOut.includes('Success');
-
-                // Step 2: Install the module via the selected root manager
+            const doInstall = (wasUninstalled) => {
                 const mode = config.installMode || 'magisk';
                 let installCmd;
                 if (mode === 'kernelsu') {
@@ -255,23 +322,26 @@ app.post('/api/adb/flash', upload.single('apk'), (req, res) => {
                             success: false,
                             pushed: true,
                             error: `Module pushed but auto-install failed. Install manually via ${managerName} app.`,
-                            output: [
-                                ...steps,
-                                `Install error: ${stdout2 || stderr2 || err2.message}`
-                            ].join('\n')
+                            output: [...steps, `Install error: ${stdout2 || stderr2 || err2.message}`].join('\n')
                         });
                     }
                     res.json({
                         success: true,
-                        output: [
-                            ...steps,
-                            `Installed via ${managerName}`,
-                            stdout2 || ''
-                        ].join('\n'),
+                        output: [...steps, `Installed via ${managerName}`, stdout2 || ''].join('\n'),
                         message: `Module installed via ${managerName}. Reboot to activate.`
                     });
                 });
-            });
+            };
+
+            // Conditionally uninstall existing user copy
+            if (config.forceUninstall) {
+                exec(`"${adb}" ${serialArg.join(' ')} shell pm uninstall ${config.packageName}`, { timeout: 10000 }, (uerr, uout) => {
+                    const wasUninstalled = !uerr && uout && uout.includes('Success');
+                    doInstall(wasUninstalled);
+                });
+            } else {
+                doInstall(false);
+            }
         });
     });
 

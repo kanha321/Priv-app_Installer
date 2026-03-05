@@ -888,18 +888,18 @@
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: var(--bg-2);
-            border: 1px solid var(--accent-border);
-            border-radius: var(--radius-md);
-            padding: 20px 22px 16px;
-            min-width: 300px;
-            max-width: 380px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, .5), 0 0 20px var(--accent-glow);
+            background: var(--bg-1);
+            border: 1px solid var(--border-2);
+            border-radius: 16px;
+            width: 380px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .04);
             z-index: 1000;
             transform: translateY(120%);
             opacity: 0;
             transition: transform 0.4s cubic-bezier(.22, .68, 0, 1.2), opacity 0.3s ease;
             pointer-events: none;
+            overflow: hidden;
         }
 
         .reboot-toast.show {
@@ -908,53 +908,152 @@
             pointer-events: all;
         }
 
-        .reboot-toast-close {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            background: none;
-            border: none;
-            color: var(--text-4);
-            font-size: 16px;
-            cursor: pointer;
-            padding: 2px 6px;
-            line-height: 1;
-            transition: var(--transition);
+        /* ═══════════════════ CONFIRM DIALOG ═══════════════════ */
+        .dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
         }
 
-        .reboot-toast-close:hover {
+        .dialog-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .dialog-card {
+            background: var(--bg-1);
+            border: 1px solid var(--border-2);
+            border-radius: 16px;
+            max-width: 420px;
+            width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .04);
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(.22, .68, 0, 1.1);
+        }
+
+        .dialog-overlay.show .dialog-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .dialog-header {
+            background: var(--bg-2);
+            border-bottom: 1px solid var(--border-1);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .dialog-header-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-warning {
+            background: rgba(255, 150, 50, 0.12);
+        }
+
+        .icon-success {
+            background: rgba(46, 213, 115, 0.12);
+        }
+
+        .dialog-header-text {
+            flex: 1;
+        }
+
+        .dialog-title {
+            font-size: 14px;
+            font-weight: 700;
             color: var(--text-1);
         }
 
-        .reboot-toast-icon {
-            font-size: 22px;
-            margin-bottom: 8px;
-        }
-
-        .reboot-toast-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--accent-text);
-            margin-bottom: 4px;
-        }
-
-        .reboot-toast-msg {
+        .dialog-subtitle {
             font-size: 11px;
-            color: var(--text-3);
-            margin-bottom: 14px;
-            line-height: 1.5;
+            color: var(--text-4);
+            margin-top: 2px;
         }
 
-        .reboot-toast-actions {
+        .dialog-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-4);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            line-height: 1;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .dialog-close:hover {
+            background: var(--border-1);
+            color: var(--text-1);
+        }
+
+        .dialog-body {
+            padding: 18px 20px;
+        }
+
+        .dialog-msg {
+            font-size: 12px;
+            color: var(--text-3);
+            line-height: 1.7;
+        }
+
+        .dialog-warning {
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: rgba(255, 80, 80, 0.08);
+            border: 1px solid rgba(255, 80, 80, 0.2);
+            border-radius: 10px;
+            font-size: 11px;
+            color: var(--danger);
+            line-height: 1.6;
+        }
+
+        .dialog-actions {
+            padding: 0 20px 18px;
             display: flex;
             gap: 8px;
         }
 
-        .reboot-toast-actions .btn {
+        .dialog-actions .btn {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 14px;
             font-size: 11px;
             text-align: center;
+            border-radius: 10px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+            border: 1px solid var(--danger);
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.15);
         }
 
         /* ═══════════════════ RESPONSIVE ═══════════════════ */
@@ -1491,14 +1590,51 @@
         }
 
         // ── Build & Flash ──
+        let pendingFlashConfig = null;
         async function buildAndFlash() {
             const c = validate();
             if (!c) return;
-            if (!selectedDevice) { log('No ADB device selected. Open the device panel first.', 'err'); return; }
+            if (!selectedDevice) { log('No ADB device selected. Select a device first.', 'err'); return; }
 
+            // Check if app is already installed as user app
+            try {
+                const chk = await fetch(`/api/adb/check-app?package=${encodeURIComponent(c.packageName)}&device=${encodeURIComponent(selectedDevice)}`);
+                const appInfo = await chk.json();
+                if (appInfo.installed && appInfo.isUserApp) {
+                    // Show confirmation dialog
+                    pendingFlashConfig = c;
+                    document.getElementById('uninstallPkgName').textContent = c.packageName;
+                    document.getElementById('confirmDialog').classList.add('show');
+                    return;
+                }
+            } catch (e) { /* proceed anyway */ }
+
+            doFlash(c, false);
+        }
+
+        function confirmUninstallAndFlash() {
+            document.getElementById('confirmDialog').classList.remove('show');
+            if (pendingFlashConfig) doFlash(pendingFlashConfig, true);
+            pendingFlashConfig = null;
+        }
+
+        function flashWithoutUninstall() {
+            document.getElementById('confirmDialog').classList.remove('show');
+            if (pendingFlashConfig) doFlash(pendingFlashConfig, false);
+            pendingFlashConfig = null;
+        }
+
+        function cancelFlash() {
+            document.getElementById('confirmDialog').classList.remove('show');
+            pendingFlashConfig = null;
+        }
+
+        async function doFlash(c, forceUninstall) {
             const btn = document.getElementById('buildFlashBtn');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> Flashing...';
+
+            c.forceUninstall = forceUninstall;
 
             log('── Build & Flash ──', 'info');
             log(`Mode: ${c.installMode === 'kernelsu' ? 'KernelSU' : 'Magisk'}`, 'step');
@@ -1506,6 +1642,7 @@
             log(`Package: ${c.packageName}`, 'step');
             log(`App: ${c.appName} v${c.version} (${c.versionCode})`, 'step');
             log(`Permissions: ${c.permissions.length}`, 'step');
+            if (forceUninstall) log('Will uninstall existing user copy first', 'warn');
             log('Building module ZIP...', 'step');
 
             const fd = new FormData();
@@ -1607,6 +1744,8 @@
                         installMode = d.manager;
                         log(`Detected root: ${d.version} → ${d.manager === 'kernelsu' ? 'KernelSU' : 'Magisk'} mode`, 'ok');
                     }
+                    // For KSU, check metamodule
+                    if (d.manager === 'kernelsu') checkMetamodule(serial);
                 }
             } catch (e) { /* silent */ }
         }
@@ -1705,18 +1844,121 @@
                 log(`Reboot failed: ${e.message}`, 'err');
             }
         }
+
+        // ── Metamodule check ──
+        async function checkMetamodule(serial) {
+            try {
+                const url = serial ? `/api/adb/metamodule/check?device=${encodeURIComponent(serial)}` : '/api/adb/metamodule/check';
+                const r = await fetch(url);
+                const d = await r.json();
+                if (d.hasMountModule) {
+                    log(`Detected metamodule: ${d.moduleName || 'Active'}`, 'ok');
+                } else {
+                    log('⚠ No mount metamodule detected (required for KernelSU system overlays)', 'warn');
+                    document.getElementById('metaWarning').classList.add('show');
+                }
+            } catch (e) { /* silent */ }
+        }
+        function dismissMetaWarning() {
+            document.getElementById('metaWarning').classList.remove('show');
+        }
+        async function installMetaOverlayFs() {
+            const btn = document.getElementById('metaInstallBtn');
+            btn.disabled = true;
+            btn.textContent = 'Installing...';
+            log('Installing meta-overlayfs...', 'info');
+            try {
+                const r = await fetch('/api/adb/metamodule/install', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ device: selectedDevice })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    log(`✓ ${d.message}`, 'ok');
+                    if (d.output) d.output.trim().split('\n').forEach(l => { if (l.trim()) log(l.trim(), 'step'); });
+                    dismissMetaWarning();
+                    showRebootToast();
+                } else {
+                    log(`✗ ${d.error}`, 'err');
+                }
+            } catch (e) {
+                log(`✗ Install failed: ${e.message}`, 'err');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Install Now';
+        }
     </script>
 
     <!-- Reboot Toast -->
     <div class="reboot-toast" id="rebootToast">
-        <button class="reboot-toast-close" onclick="dismissRebootToast()">&times;</button>
-        <div class="reboot-toast-icon">✅</div>
-        <div class="reboot-toast-title">Module installed successfully</div>
-        <div class="reboot-toast-msg">A reboot is required to activate the module and grant privileged permissions.
+        <div class="dialog-header">
+            <div class="dialog-header-icon icon-success">✅</div>
+            <div class="dialog-header-text">
+                <div class="dialog-title">Module Installed</div>
+                <div class="dialog-subtitle">Action required</div>
+            </div>
+            <button class="dialog-close" onclick="dismissRebootToast()">&times;</button>
         </div>
-        <div class="reboot-toast-actions">
+        <div class="dialog-body">
+            <div class="dialog-msg">
+                A reboot is required to activate the module and grant privileged permissions.
+            </div>
+        </div>
+        <div class="dialog-actions">
             <button class="btn btn-ghost" onclick="dismissRebootToast()">Later</button>
             <button class="btn btn-accent" onclick="rebootDevice()">Reboot Now</button>
+        </div>
+    </div>
+
+    <!-- Metamodule Warning Toast -->
+    <div class="reboot-toast" id="metaWarning">
+        <div class="dialog-header">
+            <div class="dialog-header-icon icon-warning">⚠️</div>
+            <div class="dialog-header-text">
+                <div class="dialog-title">Metamodule Required</div>
+                <div class="dialog-subtitle">KernelSU System Overlay</div>
+            </div>
+            <button class="dialog-close" onclick="dismissMetaWarning()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <div class="dialog-msg">
+                KernelSU needs <strong style="color:var(--accent-text)">meta-overlayfs</strong> to
+                mount system files. Without it, priv-app modules won't work.
+            </div>
+        </div>
+        <div class="dialog-actions">
+            <button class="btn btn-ghost" onclick="dismissMetaWarning()">Dismiss</button>
+            <button class="btn btn-accent" id="metaInstallBtn" onclick="installMetaOverlayFs()">Install Now</button>
+        </div>
+    </div>
+
+    <!-- Uninstall Confirmation Dialog -->
+    <div class="dialog-overlay" id="confirmDialog">
+        <div class="dialog-card">
+            <div class="dialog-header">
+                <div class="dialog-header-icon">⚠️</div>
+                <div class="dialog-header-text">
+                    <div class="dialog-title">App Already Installed</div>
+                    <div class="dialog-subtitle">User app detected on device</div>
+                </div>
+                <button class="dialog-close" onclick="cancelFlash()">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div class="dialog-msg">
+                    <strong style="color:var(--accent-text)" id="uninstallPkgName"></strong> is currently installed as a
+                    regular user app.
+                    To install it as a privileged system app, the existing copy needs to be removed first.
+                </div>
+                <div class="dialog-warning">
+                    ⚠ Uninstalling will permanently delete all app data including settings, accounts, and saved files.
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn btn-ghost" onclick="cancelFlash()">Cancel</button>
+                <button class="btn btn-ghost" onclick="flashWithoutUninstall()">Flash Only</button>
+                <button class="btn btn-danger" onclick="confirmUninstallAndFlash()">Uninstall & Flash</button>
+            </div>
         </div>
     </div>
 

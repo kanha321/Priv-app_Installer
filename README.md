@@ -11,12 +11,14 @@ A web-based tool to generate Magisk/KernelSU modules that install Android apps a
 ## Features
 
 - **Drag & Drop APK** — Extracts package name, app name, version, SDK levels, and permissions via `aapt2`
-- **Auto Root Detection** — Detects Magisk or KernelSU on the connected device and selects the correct install command
+- **Auto Root Detection** — Detects Magisk or KernelSU on the connected device and sets the correct install mode
 - **Dynamic Privileged Permissions** — Fetches the device's supported privileged permissions and cross-references them with the APK's manifest
 - **Fuzzy Permission Search** — Quickly find and add permissions with intelligent fuzzy matching
-- **One-Click Flash** — Builds the module ZIP, pushes it to the device, uninstalls any conflicting user copy, installs via the root manager, and prompts to reboot
+- **Smart App Handling** — Detects if the app is already installed as a user app and prompts to uninstall (to ensure priv-app priority), complete with a data deletion warning
+- **Metamodule Auto-Install** — Detects if a KernelSU system requires a mount metamodule and offers a one-click `meta-overlayfs` installation
+- **One-Click Flash** — Builds the module ZIP, pushes it to the device, installs via the root manager, and prompts to reboot
 - **Build ZIP Only** — Download the module as a `.zip` for manual installation
-- **ADB Device Management** — Real-time device detection, selection, and status monitoring
+- **ADB Device Management** — Real-time device detection, selection, and terminal-style status monitoring
 
 ## Prerequisites
 
@@ -44,10 +46,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 1. **Connect** your rooted Android device via USB (USB debugging enabled)
 2. **Select** the device from the sidebar — root manager is auto-detected
-3. **Drop** an APK file — metadata and privileged permissions are auto-extracted
-4. **Review** module properties and permissions
-5. **Flash** directly to the device or download the ZIP for manual install
-6. **Reboot** when prompted to activate the module
+3. **Resolve Warnings** — If KernelSU is detected without a metamodule, use the 1-click install prompt
+4. **Drop** an APK file — metadata and privileged permissions are auto-extracted
+5. **Review** module properties and permissions
+6. **Flash** directly to the device (the tool will warn you if the app requires uninstalling first)
+7. **Reboot** when prompted to activate the module
 
 ## Module Structure
 
