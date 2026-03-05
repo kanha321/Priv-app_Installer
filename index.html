@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priv-App Module Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           THEME — Change these to retheme the entire app
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --bg-0: #060609;
+            --bg-1: #0e0e14;
+            --bg-2: #15151e;
+            --bg-3: #1c1c28;
+            --bg-input: #0a0a10;
+
+            --border-1: #1e1e2c;
+            --border-2: #2a2a3c;
+            --border-3: #3a3a50;
+
+            --text-1: #f0f0f5;
+            --text-2: #b0b0c0;
+            --text-3: #6a6a80;
+            --text-4: #45455a;
+
+            --accent: #00d68f;
+            --accent-dim: #00b377;
+            --accent-glow: rgba(0, 214, 143, 0.15);
+            --accent-glow-strong: rgba(0, 214, 143, 0.25);
+            --accent-border: rgba(0, 214, 143, 0.3);
+            --accent-text: #00e89d;
+
+            --danger: #ff4d6a;
+            --danger-dim: rgba(255, 77, 106, 0.15);
+            --warning: #ffaa2c;
+
+            --radius: 10px;
+            --radius-sm: 6px;
+            --radius-xs: 4px;
+
+            --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 30px rgba(0, 214, 143, 0.06);
+
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ═══════════════════ RESET ═══════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-0);
+            color: var(--text-2);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-2);
+            border-radius: 5px;
+        }
+
+        /* ═══════════════════ HEADER ═══════════════════ */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(6, 6, 9, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-1);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--accent) 0%, #00e8b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .device-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent-border);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-text);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .device-badge:hover {
+            background: var(--accent-glow-strong);
+        }
+
+        .device-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        .device-badge.offline .dot {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+            animation: none;
+        }
+
+        .device-badge.offline {
+            color: var(--danger);
+            border-color: rgba(255, 77, 106, 0.3);
+            background: var(--danger-dim);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ═══════════════════ LAYOUT ═══════════════════ */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ═══════════════════ CARDS ═══════════════════ */
+        .card {
+            background: var(--bg-1);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: border-color var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-2);
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-1);
+            background: var(--bg-2);
+        }
+
+        .card-head h2 {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        /* ═══════════════════ APK DROP ZONE ═══════════════════ */
+        .drop-zone {
+            border: 2px dashed var(--border-2);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--bg-1);
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .drop-zone.has-file {
+            border-style: solid;
+            border-color: var(--accent-border);
+            background: var(--accent-glow);
+            padding: 20px 24px;
+        }
+
+        .drop-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+            opacity: 0.5;
+        }
+
+        .drop-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-1);
+            margin-bottom: 6px;
+        }
+
+        .drop-sub {
+            font-size: 12px;
+            color: var(--text-3);
+        }
+
+        .drop-sub .accent {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .drop-zone.has-file .drop-prompt {
+            display: none;
+        }
+
+        .drop-zone.has-file .file-info {
+            display: flex;
+        }
+
+        .file-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-glow-strong);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .file-details {
+            flex: 1;
+            text-align: left;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-1);
+        }
+
+        .file-meta {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-top: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .file-change-btn {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            background: none;
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius-xs);
+            padding: 6px 14px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: var(--transition);
+        }
+
+        .file-change-btn:hover {
+            background: var(--accent-glow);
+        }
+
+        #apkInput {
+            display: none;
+        }
+
+        /* ═══════════════════ APK METADATA CHIPS ═══════════════════ */
+        .meta-chips {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-1);
+        }
+
+        .meta-chips.visible {
+            display: flex;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: var(--bg-3);
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .chip-label {
+            color: var(--text-4);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.04em;
+        }
+
+        .chip-value {
+            color: var(--text-2);
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        /* ═══════════════════ ROW LAYOUTS ═══════════════════ */
+        .row {
+            display: grid;
+            gap: 20px;
+        }
+
+        .row-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .row-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .row-props {
+            grid-template-columns: 1fr 340px;
+        }
+
+        .row-hero {
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: stretch;
+        }
+
+        /* ═══════════════════ INPUTS ═══════════════════ */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-3);
+        }
+
+        .field-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-1);
+            font-family: var(--font-sans);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .field-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .field-input.mono {
+            font-family: var(--font-mono);
+            color: var(--accent-text);
+            font-size: 12px;
+        }
+
+        textarea.field-input {
+            resize: vertical;
+            min-height: 68px;
+        }
+
+        .field-input::placeholder {
+            color: var(--text-4);
+        }
+
+        /* ═══════════════════ MODE RADIO CARDS ═══════════════════ */
+        .mode-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mode-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--bg-2);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mode-card:hover {
+            border-color: var(--border-3);
+        }
+
+        .mode-card.active {
+            border-color: var(--accent-border);
+            background: var(--accent-glow);
+        }
+
+        .mode-radio {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--border-3);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .mode-card.active .mode-radio {
+            border-color: var(--accent);
+        }
+
+        .mode-card.active .mode-radio::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .mode-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mode-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-1);
+        }
+
+        .mode-card.active .mode-name {
+            color: var(--accent-text);
+        }
+
+        .mode-desc {
+            font-size: 9px;
+            color: var(--text-4);
+            margin-top: 1px;
+        }
+
+        /* ═══════════════════ PERMISSIONS ═══════════════════ */
+        .perm-search-wrap {
+            position: relative;
+        }
+
+        .perm-search-wrap .field-input {
+            padding-right: 36px;
+        }
+
+        .perm-search-icon {
+            position: absolute;
+            right: 12px;
+            bottom: 11px;
+            width: 14px;
+            height: 14px;
+            color: var(--text-4);
+            pointer-events: none;
+        }
+
+        .perm-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--bg-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--radius-sm);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 60;
+            box-shadow: var(--shadow-md);
+        }
+
+        .perm-dropdown.open {
+            display: block;
+        }
+
+        .dd-item {
+            padding: 10px 14px;
+            font-size: 11px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-1);
+            transition: background var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dd-item:last-child {
+            border: none;
+        }
+
+        .dd-item:hover {
+            background: var(--accent-glow);
+        }
+
+        .dd-item .dd-short {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .dd-item .dd-full {
+            color: var(--text-4);
+            font-size: 9px;
+        }
+
+        .perm-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .ptag {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--bg-3);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-xs);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-2);
+            animation: slideIn 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .ptag-rm {
+            background: none;
+            border: none;
+            color: var(--text-4);
+            font-size: 18px;
+            cursor: pointer;
+            line-height: 1;
+            transition: color var(--transition);
+        }
+
+        .ptag-rm:hover {
+            color: var(--danger);
+        }
+
+        .perm-empty {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-4);
+        }
+
+        /* ═══════════════════ BUTTONS ═══════════════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, #00e8b0 100%);
+            color: var(--bg-0);
+            box-shadow: 0 4px 16px rgba(0, 214, 143, 0.2);
+        }
+
+        .btn-accent:hover {
+            box-shadow: 0 6px 24px rgba(0, 214, 143, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-accent:active {
+            transform: translateY(0);
+        }
+
+        .btn-accent:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border-2);
+            color: var(--text-3);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-3);
+            color: var(--text-2);
+            background: var(--bg-3);
+        }
+
+        .btn-danger-ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 77, 106, 0.2);
+            color: var(--danger);
+        }
+
+        .btn-danger-ghost:hover {
+            background: var(--danger-dim);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .actions-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 16px;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-top-color: var(--bg-0);
+            border-radius: 50%;
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ═══════════════════ TERMINAL ═══════════════════ */
+        .terminal {
+            background: var(--bg-0);
+        }
+
+        .terminal .card-content {
+            padding: 0;
+        }
+
+        .term-body {
+            padding: 14px 20px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.8;
+            max-height: 220px;
+            overflow-y: auto;
+            min-height: 100px;
+        }
+
+        .tl {
+            margin-bottom: 1px;
+        }
+
+        .tl-info {
+            color: var(--text-4);
+            font-style: italic;
+        }
+
+        .tl-ok {
+            color: var(--accent);
+        }
+
+        .tl-err {
+            color: var(--danger);
+        }
+
+        .tl-step {
+            color: var(--text-2);
+        }
+
+        .tl-step::before {
+            content: '→ ';
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .tl-warn {
+            color: var(--warning);
+        }
+
+        /* ═══════════════════ SHELL INPUT ═══════════════════ */
+        .shell-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-1);
+            background: var(--bg-1);
+        }
+
+        .shell-prompt {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            user-select: none;
+        }
+
+        .shell-input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-1);
+        }
+
+        .shell-input::placeholder {
+            color: var(--text-4);
+        }
+
+        /* ═══════════════════ INLINE DEVICE SECTION ═══════════════════ */
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .device-card {
+            padding: 12px 14px;
+            background: var(--bg-2);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .device-card:hover {
+            border-color: var(--border-3);
+        }
+
+        .device-card.selected {
+            border-color: var(--accent-border);
+            background: var(--accent-glow);
+        }
+
+        .device-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .device-dot.online {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .device-dot.offline {
+            background: var(--danger);
+            box-shadow: 0 0 6px var(--danger);
+        }
+
+        .device-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .device-model {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .device-serial {
+            font-size: 9px;
+            font-family: var(--font-mono);
+            color: var(--text-4);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .no-devices {
+            text-align: center;
+            padding: 20px 12px;
+            color: var(--text-4);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* ═══════════════════ REBOOT TOAST ═══════════════════ */
+        .reboot-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-2);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius-md);
+            padding: 20px 22px 16px;
+            min-width: 300px;
+            max-width: 380px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .5), 0 0 20px var(--accent-glow);
+            z-index: 1000;
+            transform: translateY(120%);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(.22, .68, 0, 1.2), opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .reboot-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .reboot-toast-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--text-4);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+            transition: var(--transition);
+        }
+
+        .reboot-toast-close:hover {
+            color: var(--text-1);
+        }
+
+        .reboot-toast-icon {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .reboot-toast-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-text);
+            margin-bottom: 4px;
+        }
+
+        .reboot-toast-msg {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .reboot-toast-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .reboot-toast-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* ═══════════════════ RESPONSIVE ═══════════════════ */
+        @media (max-width: 900px) {
+            .row-props {
+                grid-template-columns: 1fr;
+            }
+
+            .row-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .row-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .row-hero .drop-zone {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .header {
+                padding: 0 14px;
+            }
+
+            .row-2,
+            .row-3,
+            .row-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .drop-zone {
+                padding: 32px 16px;
+            }
+
+            .card-content {
+                padding: 14px;
+            }
+
+            .card-head {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════ HEADER ═══════════════════ -->
+    <header class="header">
+        <div class="header-left">
+            <span class="logo">PRIV_GEN</span>
+            <div class="device-badge offline" id="deviceBadge" onclick="toggleDevicePanel()">
+                <span class="dot"></span>
+                <span id="deviceBadgeText">No Device</span>
+            </div>
+        </div>
+        <span
+            style="font-family: var(--font-mono); font-size: 10px; color: var(--text-4); letter-spacing: 0.08em;">v2.0</span>
+    </header>
+
+    <!-- ═══════════════════ MAIN ═══════════════════ -->
+    <div class="container">
+
+        <!-- Hero Row: Install Mode | APK Drop | ADB Devices -->
+        <div class="row row-hero">
+
+            <!-- Install Mode (left sidebar) -->
+            <div class="card">
+                <div class="card-head">
+                    <h2>Install Mode</h2>
+                </div>
+                <div class="card-content">
+                    <div class="mode-list">
+                        <div class="mode-card active" data-mode="magisk" onclick="setMode(this)">
+                            <span class="mode-radio"></span>
+                            <div class="mode-info">
+                                <div class="mode-name">Magisk</div>
+                                <div class="mode-desc">systemless root</div>
+                            </div>
+                        </div>
+                        <div class="mode-card" data-mode="kernelsu" onclick="setMode(this)">
+                            <span class="mode-radio"></span>
+                            <div class="mode-info">
+                                <div class="mode-name">KernelSU</div>
+                                <div class="mode-desc">kernel-based root</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APK Drop Zone (center) -->
+            <div style="display: flex; flex-direction: column; gap: 0;">
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('apkInput').click()">
+                    <div class="drop-prompt">
+                        <span class="drop-icon">📦</span>
+                        <div class="drop-title">Drop APK here or click to browse</div>
+                        <div class="drop-sub">Supports <span class="accent">.apk</span> files — auto-extracts metadata
+                        </div>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-icon">📱</div>
+                        <div class="file-details">
+                            <div class="file-name" id="fileName">—</div>
+                            <div class="file-meta" id="fileMeta">—</div>
+                        </div>
+                        <button class="file-change-btn"
+                            onclick="event.stopPropagation(); document.getElementById('apkInput').click()">Change</button>
+                    </div>
+                    <input type="file" id="apkInput" accept=".apk" onchange="handleApk(this)">
+                </div>
+
+                <!-- Metadata chips -->
+                <div class="meta-chips" id="metaChips">
+                    <div class="chip"><span class="chip-label">Min SDK</span><span class="chip-value"
+                            id="chipMinSdk">—</span></div>
+                    <div class="chip"><span class="chip-label">Target SDK</span><span class="chip-value"
+                            id="chipTargetSdk">—</span></div>
+                    <div class="chip"><span class="chip-label">Permissions</span><span class="chip-value"
+                            id="chipPermCount">—</span></div>
+                    <div class="chip"><span class="chip-label">Package</span><span class="chip-value"
+                            id="chipPkg">—</span></div>
+                </div>
+            </div>
+
+            <!-- ADB Devices (right sidebar) -->
+            <div class="card">
+                <div class="card-head">
+                    <h2>Devices</h2>
+                    <button class="btn btn-ghost" onclick="refreshDevices()" id="refreshDevicesBtn"
+                        style="font-size: 10px; padding: 5px 10px;">
+                        ↻
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="device-list" id="deviceList">
+                        <div class="no-devices">Scanning...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Properties + Permissions -->
+        <div class="row row-props">
+            <!-- Module Properties -->
+            <div class="card">
+                <div class="card-head">
+                    <h2>Module Properties</h2>
+                </div>
+                <div class="card-content" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="row row-2">
+                        <div class="field">
+                            <label class="field-label">Internal ID</label>
+                            <input class="field-input" id="fModuleId" placeholder="e.g. MyApp">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">App Name</label>
+                            <input class="field-input" id="fAppName" placeholder="e.g. My App">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Package Identifier</label>
+                        <input class="field-input mono" id="fPackage" placeholder="com.example.myapp">
+                    </div>
+                    <div class="row row-3">
+                        <div class="field">
+                            <label class="field-label">Version</label>
+                            <input class="field-input" id="fVersion" placeholder="1.0.0">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Build Code</label>
+                            <input class="field-input" id="fVersionCode" type="number" placeholder="1">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Author</label>
+                            <input class="field-input" id="fAuthor" value="Kanha Ji">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Description</label>
+                        <textarea class="field-input" id="fDesc"
+                            placeholder="Describe the module's purpose..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permissions -->
+            <div class="card" style="display: flex; flex-direction: column;">
+                <div class="card-head">
+                    <h2>Permissions Engine</h2><span style="font-size: 10px; color: var(--text-4);" id="permCounter">0
+                        active</span>
+                </div>
+                <div class="card-content" style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="perm-search-wrap field">
+                        <label class="field-label">Add Permission</label>
+                        <input class="field-input" id="permSearch" placeholder="Type to search..." autocomplete="off"
+                            oninput="filterPerms()" onfocus="filterPerms()">
+                        <svg class="perm-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <div class="perm-dropdown" id="permDD"></div>
+                    </div>
+
+                    <div class="perm-tags" id="permTags">
+                        <div class="perm-empty">No permissions added yet</div>
+                    </div>
+
+                    <div class="actions-group">
+                        <button class="btn btn-accent btn-full" id="buildFlashBtn" onclick="buildAndFlash()" disabled>
+                            ⚡ Build & Flash
+                        </button>
+                        <button class="btn btn-accent btn-full" id="buildZipBtn" onclick="buildZip()" disabled
+                            style="background: var(--bg-3); color: var(--text-2); box-shadow: none;">
+                            ↓ Build ZIP Only
+                        </button>
+                        <button class="btn btn-danger-ghost btn-full" onclick="resetAll()"
+                            style="font-size: 10px; padding: 8px;">
+                            Reset All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal -->
+        <div class="card terminal">
+            <div class="card-head">
+                <h2>Terminal</h2>
+                <button
+                    style="background:none;border:none;color:var(--text-4);font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-sans);text-transform:uppercase;"
+                    onclick="clearTerm()">Clear</button>
+            </div>
+            <div class="card-content">
+                <div class="term-body" id="term">
+                    <div class="tl tl-info"># Priv-App Module Generator ready</div>
+                    <div class="tl tl-info"># Select an APK file to begin</div>
+                </div>
+                <div class="shell-bar">
+                    <span class="shell-prompt">~$</span>
+                    <input class="shell-input" id="shellInput" placeholder="Run ADB shell command..."
+                        onkeydown="if(event.key==='Enter') runShell()">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+    <script>
+        // ── State ──
+        let apkFile = null;
+        let perms = [];
+        let selectedDevice = null;
+        let installMode = 'magisk';
+
+        // ── Device privileged permissions (fetched from device) ──
+        let devicePerms = [];
+        let permsFetching = false;
+
+        async function fetchDevicePermissions(serial) {
+            if (permsFetching) return;
+            permsFetching = true;
+            log('Fetching privileged permissions from device...', 'step');
+            try {
+                const url = serial ? `/api/adb/permissions?device=${encodeURIComponent(serial)}` : '/api/adb/permissions';
+                const r = await fetch(url);
+                const d = await r.json();
+                if (d.permissions && d.permissions.length) {
+                    devicePerms = d.permissions;
+                    log(`Loaded ${d.count} privileged permissions from device`, 'ok');
+                } else {
+                    log(d.error || 'No privileged permissions found on device', 'warn');
+                }
+            } catch (e) {
+                log(`Failed to fetch permissions: ${e.message}`, 'err');
+            }
+            permsFetching = false;
+        }
+
+        // ── Fuzzy search ──
+        function fuzzyMatch(query, target) {
+            const q = query.toLowerCase();
+            const t = target.toLowerCase();
+            let qi = 0, score = 0, consecutive = 0, lastIdx = -2;
+
+            for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+                if (t[ti] === q[qi]) {
+                    qi++;
+                    // Bonus for consecutive matches
+                    consecutive = (ti === lastIdx + 1) ? consecutive + 1 : 1;
+                    score += consecutive;
+                    // Bonus for word boundary match (after . _ or uppercase)
+                    if (ti === 0 || t[ti - 1] === '.' || t[ti - 1] === '_') score += 5;
+                    lastIdx = ti;
+                }
+            }
+            if (qi < q.length) return -1; // Not all chars matched
+            return score;
+        }
+
+        function fuzzySearch(query, items, limit = 15) {
+            const results = [];
+            for (const item of items) {
+                const score = fuzzyMatch(query, item);
+                if (score > 0) results.push({ item, score });
+            }
+            results.sort((a, b) => b.score - a.score);
+            return results.slice(0, limit).map(r => r.item);
+        }
+
+        // ── Drag & drop ──
+        const dz = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('dragover'); }));
+        dz.addEventListener('drop', ev => {
+            const f = ev.dataTransfer.files[0];
+            if (f && f.name.endsWith('.apk')) { apkFile = f; parseApk(); }
+        });
+
+        // ── APK handling ──
+        function handleApk(input) {
+            const f = input.files[0];
+            if (!f) return;
+            apkFile = f;
+            parseApk();
+        }
+
+        async function parseApk() {
+            if (!apkFile) return;
+            const dz = document.getElementById('dropZone');
+            dz.classList.add('has-file');
+            document.getElementById('fileName').textContent = apkFile.name;
+            document.getElementById('fileMeta').textContent = `${(apkFile.size / 1024 / 1024).toFixed(2)} MB`;
+
+            log(`Uploading ${apkFile.name}...`, 'step');
+
+            const fd = new FormData();
+            fd.append('apk', apkFile);
+
+            try {
+                const r = await fetch('/api/parse-apk', { method: 'POST', body: fd });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.error);
+
+                log('APK parsed successfully', 'ok');
+                log(`Package: ${d.packageName}`, 'step');
+                log(`App: ${d.appName} | v${d.versionName} (${d.versionCode})`, 'step');
+                log(`${d.permissions.length} permissions found`, 'step');
+
+                // Fill form
+                document.getElementById('fModuleId').value = (d.appName || '').replace(/\s+/g, '');
+                document.getElementById('fAppName').value = d.appName || '';
+                document.getElementById('fPackage').value = d.packageName || '';
+                document.getElementById('fVersion').value = d.versionName || '1.0';
+                document.getElementById('fVersionCode').value = d.versionCode || '1';
+                document.getElementById('fDesc').value = `Privileged app module for ${d.appName || d.packageName}`;
+
+                // Chips
+                const mc = document.getElementById('metaChips');
+                mc.classList.add('visible');
+                document.getElementById('chipMinSdk').textContent = d.minSdk || '—';
+                document.getElementById('chipTargetSdk').textContent = d.targetSdk || '—';
+                document.getElementById('chipPermCount').textContent = d.permissions.length;
+                document.getElementById('chipPkg').textContent = d.packageName || '—';
+
+                // Auto-add privileged permissions (cross-reference APK perms with device priv perms)
+                perms = [];
+                renderPerms();
+                const autoAdd = () => {
+                    let added = 0;
+                    d.permissions.forEach(p => { if (devicePerms.includes(p)) { addPerm(p); added++; } });
+                    if (added) log(`Auto-added ${added} privileged permission(s)`, 'ok');
+                    else log('No matching privileged permissions found in APK', 'info');
+                };
+                if (devicePerms.length) {
+                    autoAdd();
+                } else if (selectedDevice) {
+                    await fetchDevicePermissions(selectedDevice);
+                    autoAdd();
+                } else {
+                    log('Connect a device to auto-detect privileged permissions', 'warn');
+                }
+
+                document.getElementById('buildZipBtn').disabled = false;
+                updateFlashBtn();
+
+            } catch (e) {
+                log(`Error: ${e.message}`, 'err');
+            }
+        }
+
+        // ── Permissions ──
+        function addPerm(p) {
+            if (perms.includes(p)) return;
+            perms.push(p);
+            renderPerms();
+        }
+
+        function rmPerm(p) {
+            perms = perms.filter(x => x !== p);
+            renderPerms();
+        }
+
+        function renderPerms() {
+            const el = document.getElementById('permTags');
+            document.getElementById('permCounter').textContent = `${perms.length} active`;
+            if (!perms.length) { el.innerHTML = '<div class="perm-empty">No permissions added yet</div>'; return; }
+            el.innerHTML = perms.map(p => {
+                const short = p.split('.').pop();
+                return `<div class="ptag"><span>${esc(short)}</span><button class="ptag-rm" onclick="rmPerm('${esc(p)}')">×</button></div>`;
+            }).join('');
+        }
+
+        function filterPerms() {
+            const q = document.getElementById('permSearch').value.trim();
+            const dd = document.getElementById('permDD');
+            if (!q) { dd.classList.remove('open'); return; }
+
+            // Fuzzy search against device-fetched permissions (exclude already added)
+            const available = devicePerms.filter(p => !perms.includes(p));
+            const matches = fuzzySearch(q, available, 15);
+
+            if (!matches.length) {
+                dd.innerHTML = `<div class="dd-item" onclick="addCustomPerm()"><span class="dd-short">+ Add custom:</span> <span class="dd-full">${esc(document.getElementById('permSearch').value)}</span></div>`;
+            } else {
+                dd.innerHTML = matches.map(p => {
+                    const short = p.split('.').pop();
+                    // Highlight matched chars in the short name
+                    const highlighted = highlightFuzzy(q, short);
+                    return `<div class="dd-item" onclick="selectPerm('${esc(p)}')"><span class="dd-short">${highlighted}</span><span class="dd-full">${esc(p)}</span></div>`;
+                }).join('');
+            }
+            dd.classList.add('open');
+        }
+
+        function highlightFuzzy(query, text) {
+            const q = query.toLowerCase();
+            let qi = 0, result = '';
+            for (let i = 0; i < text.length; i++) {
+                if (qi < q.length && text[i].toLowerCase() === q[qi]) {
+                    result += `<b style="color:var(--text-1)">${esc(text[i])}</b>`;
+                    qi++;
+                } else {
+                    result += esc(text[i]);
+                }
+            }
+            return result;
+        }
+
+        function selectPerm(p) { addPerm(p); closePDD(); log(`+ ${p.split('.').pop()}`, 'step'); }
+        function addCustomPerm() {
+            const v = document.getElementById('permSearch').value.trim();
+            if (!v) return;
+            const full = v.startsWith('android.permission.') ? v : `android.permission.${v.toUpperCase().replace(/\s+/g, '_')}`;
+            addPerm(full);
+            closePDD();
+            log(`+ custom: ${full.split('.').pop()}`, 'step');
+        }
+        function closePDD() { document.getElementById('permSearch').value = ''; document.getElementById('permDD').classList.remove('open'); }
+        document.addEventListener('click', e => { if (!e.target.closest('.perm-search-wrap')) document.getElementById('permDD').classList.remove('open'); });
+
+        // ── Install Mode ──
+        function setMode(el) {
+            document.querySelectorAll('.mode-card').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            installMode = el.dataset.mode;
+        }
+
+        // ── Build config ──
+        function getConfig() {
+            return {
+                moduleId: document.getElementById('fModuleId').value.trim(),
+                appName: document.getElementById('fAppName').value.trim(),
+                packageName: document.getElementById('fPackage').value.trim(),
+                version: document.getElementById('fVersion').value.trim() || '1.0',
+                versionCode: document.getElementById('fVersionCode').value.trim() || '1',
+                author: document.getElementById('fAuthor').value.trim() || 'Unknown',
+                description: document.getElementById('fDesc').value.trim(),
+                permissions: perms,
+                installMode
+            };
+        }
+
+        function validate() {
+            const c = getConfig();
+            if (!c.packageName || !c.appName) { log('Package name and app name are required', 'err'); return null; }
+            if (!apkFile) { log('No APK selected', 'err'); return null; }
+            return c;
+        }
+
+        // ── Build ZIP ──
+        async function buildZip() {
+            const c = validate();
+            if (!c) return;
+
+            const btn = document.getElementById('buildZipBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Building...';
+
+            log('── Build ZIP ──', 'info');
+            log(`Module: ${c.appName} (${c.packageName})`, 'step');
+            log(`Permissions: ${perms.length}`, 'step');
+
+            const fd = new FormData();
+            fd.append('config', JSON.stringify(c));
+            fd.append('apk', apkFile);
+
+            try {
+                const r = await fetch('/api/build-module', { method: 'POST', body: fd });
+                if (!r.ok) { const e = await r.json(); throw new Error(e.error); }
+                const blob = new Blob([await r.arrayBuffer()], { type: 'application/zip' });
+                const zipName = `${c.appName.replace(/\s+/g, '')}Module.zip`;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = zipName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+                log(`✓ Downloaded ${zipName} (${(blob.size / 1024).toFixed(1)} KB)`, 'ok');
+            } catch (e) {
+                log(`✗ Build failed: ${e.message}`, 'err');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '↓ Build ZIP Only';
+        }
+
+        // ── Build & Flash ──
+        async function buildAndFlash() {
+            const c = validate();
+            if (!c) return;
+            if (!selectedDevice) { log('No ADB device selected. Open the device panel first.', 'err'); return; }
+
+            const btn = document.getElementById('buildFlashBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Flashing...';
+
+            log('── Build & Flash ──', 'info');
+            log(`Mode: ${c.installMode === 'kernelsu' ? 'KernelSU' : 'Magisk'}`, 'step');
+            log(`Target device: ${selectedDevice}`, 'step');
+            log(`Package: ${c.packageName}`, 'step');
+            log(`App: ${c.appName} v${c.version} (${c.versionCode})`, 'step');
+            log(`Permissions: ${c.permissions.length}`, 'step');
+            log('Building module ZIP...', 'step');
+
+            const fd = new FormData();
+            fd.append('config', JSON.stringify(c));
+            fd.append('apk', apkFile);
+            fd.append('device', selectedDevice);
+
+            try {
+                const r = await fetch('/api/adb/flash', { method: 'POST', body: fd });
+                const d = await r.json();
+                if (d.success) {
+                    log('✓ Module pushed to device', 'ok');
+                    log(`✓ ${d.message}`, 'ok');
+                    if (d.output) {
+                        d.output.trim().split('\n').forEach(line => {
+                            if (line.trim()) log(line.trim(), 'step');
+                        });
+                    }
+                    showRebootToast();
+                } else {
+                    if (d.pushed) log('✓ Module pushed to device', 'ok');
+                    log(`✗ ${d.error}`, d.pushed ? 'warn' : 'err');
+                    if (d.output) {
+                        d.output.trim().split('\n').forEach(line => {
+                            if (line.trim()) log(line.trim(), 'step');
+                        });
+                    }
+                }
+            } catch (e) {
+                log(`✗ Flash failed: ${e.message}`, 'err');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '⚡ Build & Flash';
+            updateFlashBtn();
+        }
+
+        // ── ADB Devices ──
+        async function refreshDevices() {
+            const list = document.getElementById('deviceList');
+            const btn = document.getElementById('refreshDevicesBtn');
+            btn.textContent = 'Scanning...';
+
+            try {
+                const r = await fetch('/api/adb/devices');
+                const d = await r.json();
+                if (!d.devices.length) {
+                    list.innerHTML = '<div class="no-devices">No devices found.<br>Enable USB debugging and connect your device.</div>';
+                    updateBadge(null);
+                } else {
+                    list.innerHTML = d.devices.map(dev => {
+                        const isOnline = dev.status === 'device';
+                        const sel = selectedDevice === dev.serial ? 'selected' : '';
+                        return `<div class="device-card ${sel}" onclick="pickDevice('${dev.serial}', '${esc(dev.model)}')">
+                            <span class="device-dot ${isOnline ? 'online' : 'offline'}"></span>
+                            <div class="device-info">
+                                <div class="device-model">${esc(dev.model)}</div>
+                                <div class="device-serial">${esc(dev.serial)}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    // Auto-select first if none selected
+                    if (!selectedDevice && d.devices[0].status === 'device') {
+                        pickDevice(d.devices[0].serial, d.devices[0].model);
+                    }
+                    log(`Found ${d.devices.length} ADB device(s)`, 'ok');
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="no-devices">ADB not available</div>';
+                log('ADB not reachable', 'err');
+            }
+            btn.textContent = '↻ Refresh';
+        }
+
+        function pickDevice(serial, model) {
+            selectedDevice = serial;
+            updateBadge({ serial, model });
+            updateFlashBtn();
+            // Update selected state
+            document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`.device-card[onclick*="${serial}"]`)?.classList.add('selected');
+            log(`Device selected: ${model} (${serial})`, 'ok');
+            // Fetch privileged permissions from this device
+            if (!devicePerms.length) fetchDevicePermissions(serial);
+            // Auto-detect root manager
+            detectRootManager(serial);
+        }
+
+        async function detectRootManager(serial) {
+            try {
+                const url = serial ? `/api/adb/root-manager?device=${encodeURIComponent(serial)}` : '/api/adb/root-manager';
+                const r = await fetch(url);
+                const d = await r.json();
+                if (d.manager === 'kernelsu' || d.manager === 'magisk') {
+                    // Auto-switch the install mode radio
+                    const card = document.querySelector(`.mode-card[data-mode="${d.manager}"]`);
+                    if (card) {
+                        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        installMode = d.manager;
+                        log(`Detected root: ${d.version} → ${d.manager === 'kernelsu' ? 'KernelSU' : 'Magisk'} mode`, 'ok');
+                    }
+                }
+            } catch (e) { /* silent */ }
+        }
+
+        function updateBadge(dev) {
+            const badge = document.getElementById('deviceBadge');
+            const text = document.getElementById('deviceBadgeText');
+            if (dev) {
+                badge.classList.remove('offline');
+                text.textContent = dev.model;
+            } else {
+                badge.classList.add('offline');
+                text.textContent = 'No Device';
+            }
+        }
+
+        function updateFlashBtn() {
+            document.getElementById('buildFlashBtn').disabled = !(apkFile && selectedDevice);
+        }
+
+        // ── Shell ──
+        async function runShell() {
+            const inp = document.getElementById('shellInput');
+            const cmd = inp.value.trim();
+            if (!cmd) return;
+            inp.value = '';
+
+            log(`$ ${cmd}`, 'step');
+
+            try {
+                const r = await fetch('/api/adb/shell', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: cmd, device: selectedDevice })
+                });
+                const d = await r.json();
+                const lines = d.output.trim().split('\n');
+                lines.forEach(l => log(l, d.error ? 'err' : 'info'));
+            } catch (e) {
+                log(`Shell error: ${e.message}`, 'err');
+            }
+        }
+
+        // ── Reset ──
+        function resetAll() {
+            ['fModuleId', 'fAppName', 'fPackage', 'fVersion', 'fVersionCode', 'fDesc'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('fAuthor').value = 'Kanha Ji';
+            document.getElementById('dropZone').classList.remove('has-file');
+            document.getElementById('metaChips').classList.remove('visible');
+            document.getElementById('apkInput').value = '';
+            document.getElementById('buildZipBtn').disabled = true;
+            document.getElementById('buildFlashBtn').disabled = true;
+            apkFile = null;
+            perms = [];
+            renderPerms();
+            log('Form reset', 'info');
+        }
+
+        // ── Terminal logging ──
+        function log(text, type = 'info') {
+            const t = document.getElementById('term');
+            const d = document.createElement('div');
+            d.className = `tl tl-${type}`;
+            d.textContent = text;
+            t.appendChild(d);
+            t.scrollTop = t.scrollHeight;
+        }
+        function clearTerm() {
+            document.getElementById('term').innerHTML = '<div class="tl tl-info"># Terminal cleared</div>';
+        }
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        // ── Init: auto-scan devices ──
+        refreshDevices();
+
+        // ── Reboot toast ──
+        function showRebootToast() {
+            document.getElementById('rebootToast').classList.add('show');
+        }
+        function dismissRebootToast() {
+            document.getElementById('rebootToast').classList.remove('show');
+        }
+        async function rebootDevice() {
+            dismissRebootToast();
+            log('Rebooting device...', 'info');
+            try {
+                await fetch('/api/adb/shell', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: 'reboot', device: selectedDevice })
+                });
+                log('Device is rebooting. Reconnect after boot.', 'ok');
+                updateBadge(null);
+                selectedDevice = null;
+            } catch (e) {
+                log(`Reboot failed: ${e.message}`, 'err');
+            }
+        }
+    </script>
+
+    <!-- Reboot Toast -->
+    <div class="reboot-toast" id="rebootToast">
+        <button class="reboot-toast-close" onclick="dismissRebootToast()">&times;</button>
+        <div class="reboot-toast-icon">✅</div>
+        <div class="reboot-toast-title">Module installed successfully</div>
+        <div class="reboot-toast-msg">A reboot is required to activate the module and grant privileged permissions.
+        </div>
+        <div class="reboot-toast-actions">
+            <button class="btn btn-ghost" onclick="dismissRebootToast()">Later</button>
+            <button class="btn btn-accent" onclick="rebootDevice()">Reboot Now</button>
+        </div>
+    </div>
+
+</body>
+
+</html>

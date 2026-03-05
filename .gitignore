@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Test & reference files
+testmodule/
+references/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp/upload files
+*.tmp
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
