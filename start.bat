@@ -11,7 +11,7 @@ echo.
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo [!] Node.js is not installed or not in system PATH.
-    echo Please install Node.js (v18+) from https://nodejs.org/
+    echo Please install Node.js v18 or newer from https://nodejs.org/
     pause
     exit /b 1
 )
